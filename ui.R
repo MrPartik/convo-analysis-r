@@ -4,6 +4,6 @@ library(shinycssloaders)
 ui <- fluidPage(
   titlePanel("Enrolment by Academic Year"),
   bootstrap = TRUE,
-    uiOutput("lines"),
+    uiOutput("history"),
     plotlyOutput("bars", height = "auto")  %>% withSpinner(color="#0dc5c1")
 )

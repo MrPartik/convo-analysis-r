@@ -4,8 +4,9 @@ library(jsonlite)
 library(plotly)
 defaultUrl <- if(Sys.getenv('DATA-SOURCE-URL') == "") "http://127.0.0.1:8000/get/data-source" else Sys.getenv('DATA-SOURCE-URL')
 server <- function(input, output, session) {
-    total <- fromJSON(paste(defaultUrl, isolate(session$clientData$url_search), sep = ""))$data_source
-    #chart <- fromJSON(paste(defaultUrl, isolate(session$clientData$url_search), sep = ""))$chart
+    dataSource <- fromJSON(paste(defaultUrl, isolate(session$clientData$url_search), sep = ""))
+    total <- dataSource$data_source
+    #chart <- dataSource$chart
     categories <- unique(total$year)
     sub_categories <- unique(total$region)
     ids <- unique(total$hei)
