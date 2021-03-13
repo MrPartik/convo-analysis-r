@@ -2,12 +2,16 @@ library(dplyr)
 library(readr)
 library(jsonlite)
 library(plotly)
+library(DT)
 defaultUrl <- if(Sys.getenv('DATA-SOURCE-URL') == "") "http://127.0.0.1:8000/get/data-source" else Sys.getenv('DATA-SOURCE-URL')
 server <- function(input, output, session) {
     dataSource <- fromJSON(paste(defaultUrl, isolate(session$clientData$url_search), sep = ""))
-    session$sendCustomMessage("changetitle", dataSource$title)
     total <- dataSource$data_source
     chart <- dataSource$chart
+    session$sendCustomMessage("changetitle", dataSource$title)
+    output$datatable <- DT::renderDataTable({
+        DT::datatable(total, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+    })
     categories <- unique(total$year)
     sub_categories <- unique(total$region)
     ids <- unique(total$hei)
@@ -52,38 +56,7 @@ server <- function(input, output, session) {
                 yaxis = list(title = "Total"),
                 xaxis = list(title = "")
             )
-        
-        if (!length(drills$region)) {
-            add_bars(p, color = ~value)
-        } else {
-            # add a visual cue of which ID is selected
-            add_bars(p, color = ~value, showlegend = FALSE)
-        }
-    })
-    
-    # time-series chart of the total
-    output$lines <- renderPlotly({
-        p <- if (!length(drills$region)) {
-            datasource() %>%
-                count(year, value, wt = total) %>%
-                plot_ly(x = ~year, y = ~n) %>%
-                add_lines(color = ~value)
-        } else if (!length(drills$hei)) {
-            datasource() %>%
-                count(year,value, wt = total) %>%
-                plot_ly(x = ~year, y = ~n) %>%
-                add_lines(color = ~value)
-        } else if (!length(drills$category)) {
-            datasource() %>%
-                count(year, value, wt = total) %>%
-                plot_ly(x = ~year, y = ~n) %>%
-                add_lines(color = ~value)
-        }
-        p %>%
-            layout(
-                yaxis = list(title = "Total"),
-                xaxis = list(title = "")
-            )
+        add_bars(p, color = ~value, showlegend = FALSE)
     })
     
     # control the state of the drilldown by clicking the bar graph

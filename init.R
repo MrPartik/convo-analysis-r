@@ -1,4 +1,4 @@
-packages <- c("shiny", "devtools", "plotly", "dplyr", "readr", "jsonlite", "shinycssloaders")
+packages <- c("shiny", "devtools", "plotly", "dplyr", "readr", "jsonlite", "shinycssloaders", "DT")
 install_if_missing <- function(p) {
   if (!p %in% rownames(installed.packages())) {
     install.packages(p)
