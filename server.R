@@ -56,19 +56,20 @@ server <- function(input, output, session) {
         if (!length(drills$region)) {
             add_bars(p, color = ~value)
         } else if (!length(drills$hei)) {
-            add_bars(p) %>%
+            add_bars(p, color = ~value) %>%
                 layout(
                     hovermode = "x",
-                    xaxis = list(showticklabels = FALSE)
+                    xaxis = list(showticklabels = FALSE,
+                    showlegend = FALSE)
                 )
         } else {
             # add a visual cue of which ID is selected
-            add_bars(p) %>%
+            add_bars(p, color = ~value) %>%
                 filter(value %in% drills$hei) %>%
                 add_bars(color = I("black")) %>%
                 layout(
-                    hovermode = "x", xaxis = list(showticklabels = TRUE),
-                    showlegend = TRUE, barmode = "overlay"
+                    hovermode = "x", xaxis = list(showticklabels = FALSE),
+                    showlegend = FALSE, barmode = "overlay"
                 )
         }
     })
@@ -76,7 +77,6 @@ server <- function(input, output, session) {
     # time-series chart of the total
     output$lines <- renderPlotly({
         p <- if (!length(drills$region)) {
-            print(datasource())
             datasource() %>%
                 count(year, value, wt = total) %>%
                 plot_ly(x = ~year, y = ~n) %>%
@@ -85,7 +85,7 @@ server <- function(input, output, session) {
             datasource() %>%
                 count(year,value, wt = total) %>%
                 plot_ly(x = ~year, y = ~n) %>%
-                add_lines()
+                add_lines(color = ~value)
         } else if (!length(drills$category)) {
             datasource() %>%
                 count(year, value, wt = total) %>%
@@ -176,6 +176,25 @@ server <- function(input, output, session) {
             column(3, categoryInput),
             column(3, programInput)
         )
+    })
+    
+    output$back <- renderUI({
+        if (!is.null(drills$year)) 
+            actionButton("clear", "Back", icon("chevron-left"))
+    })
+    
+    observeEvent(input$clear, {
+        if(!is.null(drills$year) && is.null(drills$region)) {  
+            drills$year <- NULL
+        }else if(!is.null(drills$region) && is.null(drills$hei)) { 
+            drills$region <- NULL
+        } else if(!is.null(drills$hei) && is.null(drills$category)) {
+            drills$hei <- NULL
+        } else if(!is.null(drills$category) && is.null(drills$program)) {
+            drills$category <- NULL
+        } else if(!is.null(drills$program)) { 
+            drills$program <- NULL
+        }
     })
     
     # control the state of the drilldown via the `selectInput()`s
