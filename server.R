@@ -10,7 +10,7 @@ server <- function(input, output, session) {
     chart <- dataSource$chart
     session$sendCustomMessage("changetitle", dataSource$title)
     output$datatable <- DT::renderDataTable({
-        DT::datatable(total, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+        DT::datatable(total, options = list(lengthMenu = c(10, 20, 30, 40, 50, 100), pageLength = 20), selection = "none")
     })
     categories <- unique(total$year)
     sub_categories <- unique(total$region)
