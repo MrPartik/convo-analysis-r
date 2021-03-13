@@ -55,20 +55,11 @@ server <- function(input, output, session) {
         
         if (!length(drills$region)) {
             add_bars(p, color = ~value)
-        } else if (!length(drills$hei)) {
-            add_bars(p, color = ~value) %>%
-                layout(
-                    hovermode = "x",
-                    xaxis = list(showticklabels = FALSE,
-                    showlegend = FALSE)
-                )
         } else {
             # add a visual cue of which ID is selected
             add_bars(p, color = ~value) %>%
-                filter(value %in% drills$hei) %>%
-                add_bars(color = I("black")) %>%
                 layout(
-                    hovermode = "x", xaxis = list(showticklabels = FALSE),
+                    hovermode = "x", xaxis = list(showticklabels = TRUE),
                     showlegend = FALSE, barmode = "overlay"
                 )
         }
@@ -122,12 +113,16 @@ server <- function(input, output, session) {
         
         yearInput <- selectInput(
             "year", "Academic Year",
+            multiple = FALSE,
+            selectize = FALSE,
             choices = categories, selected = drills$year
         )
         if (!length(drills$region)) return(yearInput)
         sd <- filter(total, year %in% drills$year)
         regionInput <- selectInput(
             "region", "Regions",
+            multiple = FALSE,
+            selectize = FALSE,
             choices = unique(sd$region),
             selected = drills$region
         )
@@ -140,6 +135,8 @@ server <- function(input, output, session) {
         sd <- filter(sd, region %in% drills$region)
         heiInput <- selectInput(
             "hei", "Institutions",
+            multiple = FALSE,
+            selectize = FALSE,
             choices = unique(sd$hei),
             selected = drills$hei
         )
@@ -153,6 +150,8 @@ server <- function(input, output, session) {
         sd <- filter(sd, hei %in% drills$hei)
         categoryInput <- selectInput(
             "category", "Program Categories",
+            multiple = FALSE,
+            selectize = FALSE,
             choices = unique(sd$category),
             selected = drills$category
         )
@@ -164,17 +163,11 @@ server <- function(input, output, session) {
                 column(3, categoryInput)
             ))
         }
-        sd <- filter(sd, region %in% drills$category)
-        programInput <- selectInput(
-            "program", "Programs",
-            choices = unique(sd$program), selected = drills$program
-        )
         fluidRow(
             column(3, yearInput),
             column(3, regionInput),
             column(3, heiInput),
-            column(3, categoryInput),
-            column(3, programInput)
+            column(3, categoryInput)
         )
     })
     
