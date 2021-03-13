@@ -5,8 +5,9 @@ library(plotly)
 defaultUrl <- if(Sys.getenv('DATA-SOURCE-URL') == "") "http://127.0.0.1:8000/get/data-source" else Sys.getenv('DATA-SOURCE-URL')
 server <- function(input, output, session) {
     dataSource <- fromJSON(paste(defaultUrl, isolate(session$clientData$url_search), sep = ""))
+    session$sendCustomMessage("changetitle", dataSource$title)
     total <- dataSource$data_source
-    #chart <- dataSource$chart
+    chart <- dataSource$chart
     categories <- unique(total$year)
     sub_categories <- unique(total$region)
     ids <- unique(total$hei)
@@ -66,8 +67,8 @@ server <- function(input, output, session) {
                 filter(value %in% drills$hei) %>%
                 add_bars(color = I("black")) %>%
                 layout(
-                    hovermode = "x", xaxis = list(showticklabels = FALSE),
-                    showlegend = FALSE, barmode = "overlay"
+                    hovermode = "x", xaxis = list(showticklabels = TRUE),
+                    showlegend = TRUE, barmode = "overlay"
                 )
         }
     })
@@ -75,26 +76,21 @@ server <- function(input, output, session) {
     # time-series chart of the total
     output$lines <- renderPlotly({
         p <- if (!length(drills$region)) {
+            print(datasource())
             datasource() %>%
                 count(year, value, wt = total) %>%
                 plot_ly(x = ~year, y = ~n) %>%
                 add_lines(color = ~value)
         } else if (!length(drills$hei)) {
             datasource() %>%
-                count(year, wt = total) %>%
+                count(year,value, wt = total) %>%
                 plot_ly(x = ~year, y = ~n) %>%
                 add_lines()
         } else if (!length(drills$category)) {
             datasource() %>%
-                count(year, wt = total) %>%
+                count(year, value, wt = total) %>%
                 plot_ly(x = ~year, y = ~n) %>%
-                add_lines()
-        } else {
-            datasource() %>%
-                filter(program %in% drills$program) %>%
-                select(-value) %>%
-                plot_ly() %>%
-                add_table()
+                add_lines(color = ~value)
         }
         p %>%
             layout(
@@ -116,8 +112,6 @@ server <- function(input, output, session) {
             drills$hei <- x
         } else if (!length(drills$category)) {
             drills$category <- x
-        } else {
-            drills$program <- x
         }
     })
     
