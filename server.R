@@ -57,11 +57,7 @@ server <- function(input, output, session) {
             add_bars(p, color = ~value)
         } else {
             # add a visual cue of which ID is selected
-            add_bars(p, color = ~value) %>%
-                layout(
-                    hovermode = "x", xaxis = list(showticklabels = TRUE),
-                    showlegend = FALSE, barmode = "overlay"
-                )
+            add_bars(p, color = ~value, showlegend = FALSE)
         }
     })
     
