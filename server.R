@@ -10,9 +10,10 @@ server <- function(input, output, session) {
     chart <- dataSource$chart
     intent <- dataSource$getType
     session$sendCustomMessage("changetitle", dataSource$title)
+    Message <- c('No data available');
     output$datatable <- DT::renderDataTable({
-        DT::datatable(total, options = list(lengthMenu = c(10, 20, 30, 40, 50, 100), pageLength = 20), selection = "none")
-    })
+        DT::datatable(if(length(total) != 0) total else data.frame(Message), options = list(lengthMenu = c(10, 20, 30, 40, 50, 100), pageLength = 20), selection = "none")
+    });
     
     # These reactive values keep track of the drilldown state
     # (NULL means inactive)
@@ -63,6 +64,7 @@ server <- function(input, output, session) {
     
     # bar chart of total by 'current level of year'
     output$bars <- renderPlotly({
+        if(length(total) == 0) return ();
         d <- count(datasource(), value, wt = total)
         
         p <- plot_ly(d, x = ~value, y = ~n, source = "bars") %>%
@@ -76,7 +78,6 @@ server <- function(input, output, session) {
     # control the state of the drilldown by clicking the bar graph
     observeEvent(event_data("plotly_click", source = "bars"), {
         x <- event_data("plotly_click", source = "bars")$x
-        print(x)
         if (!length(drills$year)) {
             drills$year <- x
         } else if (!length(drills$type)) {
@@ -96,6 +97,8 @@ server <- function(input, output, session) {
     
     # populate a `selectInput()` for each active drilldown
     output$history <- renderUI({
+        
+        if(length(total) == 0) return ("No available data.");
         if (!length(drills$year))
             return("Click the bar chart to drilldown")
         
